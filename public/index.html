@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extrator de Contatos</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">📇</span>
+        <div>
+          <strong>Extrator de Contatos</strong>
+          <small>Prospecção local</small>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-view="home">🏠 Início</button>
+        <button class="nav-item" data-view="extractor">🔎 Extrator de telefone Google</button>
+        <button class="nav-item" data-view="whatsapp">💬 Enviar no WhatsApp</button>
+        <button class="nav-item" data-view="connections">🔗 Conexões WhatsApp</button>
+        <button class="nav-item" data-view="warming">🌱 Maturação de Números</button>
+        <button class="nav-item" data-view="contacts">👥 Contatos</button>
+        <button class="nav-item" data-view="remarketing">🎯 Remarketing</button>
+      </nav>
+      <footer class="sidebar-footer">v0.2 · uso interno</footer>
+    </aside>
+
+    <main class="content">
+      <!-- ===== INÍCIO ===== -->
+      <section id="view-home" class="view active">
+        <h1>Painel</h1>
+        <div class="stats-grid">
+          <div class="stat-card"><span id="stat-total">–</span><label>Contatos no banco</label></div>
+          <div class="stat-card"><span id="stat-novo">–</span><label>Aguardando envio</label></div>
+          <div class="stat-card"><span id="stat-enviado">–</span><label>Mensagens enviadas</label></div>
+          <div class="stat-card"><span id="stat-erro">–</span><label>Com erro</label></div>
+        </div>
+        <div class="actions-grid">
+          <button class="action-card" data-goto="extractor">
+            <span class="action-icon">🔎</span>
+            <strong>Extrator de telefone Google</strong>
+            <p>Busque um nicho no Google Maps e salve os telefones sem duplicados.</p>
+          </button>
+          <button class="action-card" data-goto="whatsapp">
+            <span class="action-icon">💬</span>
+            <strong>Enviar no WhatsApp</strong>
+            <p>Dispare sua campanha de marketing para os contatos extraídos.</p>
+          </button>
+          <button class="action-card" data-goto="connections">
+            <span class="action-icon">🔗</span>
+            <strong>Conexões WhatsApp</strong>
+            <p>Conecte um ou vários números e mantenha-os sempre online.</p>
+          </button>
+          <button class="action-card" data-goto="warming">
+            <span class="action-icon">🌱</span>
+            <strong>Maturação de Números</strong>
+            <p>Aqueça seus chips com conversas naturais e reduza o risco de bloqueio.</p>
+          </button>
+        </div>
+      </section>
+
+      <!-- ===== EXTRATOR ===== -->
+      <section id="view-extractor" class="view">
+        <h1>Extrator de telefone Google</h1>
+        <p class="hint">Digite o nicho e a cidade, igual você faria no Google. Ex: <em>Cabeleireiros em Sapiranga</em></p>
+        <form id="extract-form" class="inline-form">
+          <input id="extract-query" type="text" placeholder='Ex: "Cabeleireiros em Sapiranga"' required />
+          <button type="submit" class="btn primary" id="extract-btn">Extrair contatos</button>
+        </form>
+        <p class="hint">💡 <strong>Cidade grande?</strong> O Google devolve no máximo ~60 resultados por pesquisa (limite do próprio Google).
+          Para pegar tudo, pesquise por bairro ou região — ex: <em>"Cabeleireiro na Mooca, São Paulo"</em>, <em>"Cabeleireiro em Pinheiros, São Paulo"</em> —
+          os repetidos são descartados automaticamente e a lista só cresce.</p>
+        <div id="extract-result" class="result-box hidden"></div>
+      </section>
+
+      <!-- ===== ENVIAR NO WHATSAPP ===== -->
+      <section id="view-whatsapp" class="view">
+        <h1>Enviar no WhatsApp</h1>
+
+        <div class="card">
+          <h2>1. Número de envio</h2>
+          <div class="wa-status-row">
+            <select id="camp-session"><option value="">Nenhum número conectado</option></select>
+            <button class="btn" data-goto="connections">🔗 Gerenciar conexões</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2. Lista de contatos</h2>
+          <div class="table-toolbar">
+            <select id="camp-niche"><option value="">Todos os nichos</option></select>
+            <label class="btn file-btn">📂 Importar planilha (.xlsx/.csv)
+              <input type="file" id="camp-import-file" accept=".xlsx,.csv" hidden />
+            </label>
+          </div>
+          <div class="table-toolbar">
+            <label><input type="checkbox" id="camp-select-all" checked /> Selecionar todos os pendentes</label>
+            <span id="camp-count" class="muted"></span>
+          </div>
+          <div class="table-scroll">
+            <table id="camp-table">
+              <thead><tr><th></th><th>Empresa</th><th>Telefone</th><th>Nicho</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>3. Mensagens</h2>
+          <p class="hint">Fluxo por contato: envia a <strong>saudação</strong> (dispara a resposta automática do estabelecimento),
+            aguarda alguns segundos e envia a <strong>mensagem principal</strong> com o criativo. Use <code>{nome}</code> para inserir o nome da empresa.</p>
+          <label class="block-label">1ª mensagem — saudação (deixe vazia para pular)
+            <textarea id="camp-greeting" rows="2" placeholder="Olá, tudo bem?"></textarea>
+          </label>
+          <label class="block-label">2ª mensagem — principal
+            <textarea id="camp-message" rows="5" placeholder="Oi {nome}! Trabalho com ... "></textarea>
+          </label>
+          <div class="form-row">
+            <label>Criativo (imagem ou vídeo, opcional)
+              <span class="file-row">
+                <label class="btn file-btn">🖼 Escolher arquivo
+                  <input type="file" id="camp-media-file" accept="image/*,video/*" hidden />
+                </label>
+                <span id="camp-media-name" class="muted">nenhum arquivo</span>
+                <button class="btn tiny hidden" id="camp-media-clear">✕</button>
+              </span>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>Pausa entre saudação e mensagem (seg.)
+              <input id="camp-between-delay" type="number" min="1" value="3" style="width:90px" />
+            </label>
+            <label>Intervalo entre contatos (segundos)
+              <span class="delay-inputs">
+                <input id="camp-min-delay" type="number" min="10" value="25" /> a
+                <input id="camp-max-delay" type="number" min="10" value="60" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>4. Disparo</h2>
+          <div class="wa-actions">
+            <button class="btn primary" id="camp-start-btn">▶ Iniciar campanha</button>
+            <button class="btn danger hidden" id="camp-stop-btn">■ Parar</button>
+          </div>
+          <div id="camp-progress" class="progress-box hidden">
+            <div class="progress-bar"><div id="camp-progress-fill"></div></div>
+            <p id="camp-progress-text"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CONEXÕES ===== -->
+      <section id="view-connections" class="view">
+        <h1>Conexões WhatsApp</h1>
+        <p class="hint">Cada número conectado fica salvo e reconecta sozinho quando o sistema abre.
+          A conexão só é removida quando você clicar em <strong>Excluir</strong>.</p>
+        <form id="conn-form" class="inline-form">
+          <input id="conn-name" type="text" placeholder='Nome do número (ex: "Chip Vivo 1")' required />
+          <button type="submit" class="btn primary">➕ Conectar novo número</button>
+        </form>
+        <div id="conn-list" class="conn-grid"></div>
+      </section>
+
+      <!-- ===== MATURAÇÃO ===== -->
+      <section id="view-warming" class="view">
+        <h1>Maturação de Números</h1>
+        <p class="hint">Números novos que já saem disparando marketing são bloqueados rápido. A maturação faz seus próprios números
+          conversarem entre si de forma natural — com digitação, leitura e horários humanos — subindo o volume aos poucos até
+          parecerem chips ativos de verdade. Quanto mais dias de aquecimento antes de usar o número em campanha, mais seguro.</p>
+        <p class="hint">🔀 Com a maturação ligada, seus números conversam entre si em conversas privadas, com <strong>rodízio aleatório</strong> —
+          até 4 números aquecendo ao mesmo tempo. Nada é manual; você só liga e acompanha.</p>
+
+        <div class="card">
+          <div class="warming-toggle-row">
+            <div>
+              <h2 style="margin:0">Status</h2>
+              <p id="wm-status-line" class="muted">carregando…</p>
+            </div>
+            <button class="btn primary" id="wm-toggle">Ligar maturação</button>
+          </div>
+          <p id="wm-warning" class="error-text hidden"></p>
+        </div>
+
+        <div class="card">
+          <h2>Configurações</h2>
+          <div class="form-row">
+            <label>Horário ativo
+              <span class="delay-inputs">
+                das <input id="wm-start" type="number" min="0" max="23" value="8" /> h
+                às <input id="wm-end" type="number" min="0" max="23" value="21" /> h
+              </span>
+            </label>
+            <label>Intensidade
+              <select id="wm-intensity">
+                <option value="leve">Leve (mais seguro)</option>
+                <option value="moderado">Moderado</option>
+                <option value="intenso">Intenso (mais rápido)</option>
+              </select>
+            </label>
+          </div>
+          <button class="btn" id="wm-save-config">Salvar configurações</button>
+          <p class="hint">Fora do horário ativo os números descansam (ninguém conversa de madrugada). A intensidade define quantas
+            mensagens por dia cada número troca — ele começa baixo e sobe conforme "envelhece".</p>
+        </div>
+
+        <div class="card">
+          <h2>Números no aquecimento</h2>
+          <p class="hint">Inclua pelo menos <strong>2 números conectados</strong> para que consigam conversar entre si.</p>
+          <div class="table-toolbar">
+            <select id="wm-add-select"><option value="">Selecione um número conectado…</option></select>
+            <button class="btn" id="wm-add-btn">➕ Adicionar ao aquecimento</button>
+          </div>
+          <div class="table-scroll">
+            <table id="wm-members-table">
+              <thead><tr><th>Número</th><th>Status</th><th>Idade</th><th>Hoje</th><th>Total</th><th>Última atividade</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="warming-toggle-row">
+            <div>
+              <h2 style="margin:0">Conversas recentes</h2>
+              <p class="hint" style="margin:4px 0 0">Espiada nas mensagens que seus números estão trocando. Limpar aqui não afeta as cotas do dia.</p>
+            </div>
+            <button class="btn" id="wm-clear-feed">🗑 Limpar histórico</button>
+          </div>
+          <div id="wm-feed" class="wm-feed"></div>
+        </div>
+      </section>
+
+      <!-- ===== CONTATOS ===== -->
+      <section id="view-contacts" class="view">
+        <h1>Contatos</h1>
+        <div class="table-toolbar">
+          <select id="ct-filter-niche"><option value="">Todos os nichos</option></select>
+          <select id="ct-filter-status">
+            <option value="">Todos os status</option>
+            <option value="novo">Novo</option>
+            <option value="enviado">Enviado</option>
+            <option value="erro">Erro</option>
+          </select>
+          <button class="btn" id="ct-export-btn">⬇ Exportar Excel</button>
+          <button class="btn danger" id="ct-clear-btn">🗑 Limpar listagem</button>
+        </div>
+        <p class="hint">O botão <strong>Limpar listagem</strong> apaga o que os filtros acima estão mostrando —
+          exporte para Excel antes, se quiser guardar. Para reutilizar uma lista depois, importe a planilha na página de envio.
+          Use a coluna <strong>Remarketing</strong> para etiquetar o lead conforme você evolui com ele — a etiqueta vai para a aba Remarketing e fica salva mesmo que você limpe esta lista.</p>
+        <div class="table-scroll">
+          <table id="ct-table">
+            <thead>
+              <tr><th>Empresa</th><th>Telefone</th><th>Nicho</th><th>Status</th><th>Remarketing</th><th>Extraído em</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== REMARKETING ===== -->
+      <section id="view-remarketing" class="view">
+        <h1>Remarketing</h1>
+        <p class="hint">Listas montadas a partir das etiquetas que você dá aos contatos na aba Contatos. Ficam salvas aqui
+          independentemente da base — mesmo que o número seja bloqueado ou você limpe a listagem, o lead permanece.</p>
+        <div class="table-toolbar" id="rmk-tabs"></div>
+        <div class="table-toolbar">
+          <button class="btn" id="rmk-export-btn">⬇ Exportar Excel</button>
+          <span id="rmk-count" class="muted"></span>
+        </div>
+        <div class="table-scroll">
+          <table id="rmk-table">
+            <thead>
+              <tr><th>Empresa</th><th>Telefone</th><th>Etiqueta</th><th>Nicho</th><th>Atualizado</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
