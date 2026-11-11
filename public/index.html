@@ -95,6 +95,7 @@
             <label class="btn file-btn">📂 Importar planilha (.xlsx/.csv)
               <input type="file" id="camp-import-file" accept=".xlsx,.csv" hidden />
             </label>
+            <button class="btn" id="camp-add-contact">➕ Adicionar contato</button>
           </div>
           <div class="table-toolbar">
             <label><input type="checkbox" id="camp-select-all" checked /> Selecionar todos os pendentes</label>
@@ -129,6 +130,8 @@
               </span>
             </label>
           </div>
+          <p class="hint" style="color: var(--warn)">⚠ Envio de imagem/vídeo temporariamente indisponível — uma mudança recente do WhatsApp quebrou o
+            envio de mídia na biblioteca gratuita, ainda sem correção. <strong>A mensagem de texto é enviada normalmente</strong>; por ora, use só texto.</p>
           <div class="form-row">
             <label>Pausa entre saudação e mensagem (seg.)
               <input id="camp-between-delay" type="number" min="1" value="3" style="width:90px" />
@@ -247,6 +250,7 @@
             <option value="enviado">Enviado</option>
             <option value="erro">Erro</option>
           </select>
+          <button class="btn" id="ct-add-contact">➕ Adicionar contato</button>
           <button class="btn" id="ct-export-btn">⬇ Exportar Excel</button>
           <button class="btn danger" id="ct-clear-btn">🗑 Limpar listagem</button>
         </div>
@@ -283,6 +287,27 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- ===== Modal: adicionar contato manualmente ===== -->
+  <div id="add-contact-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2>Adicionar contato</h2>
+      <p class="hint">Insira um número avulso — ótimo para testes ou um contato pego na hora.</p>
+      <label class="block-label">Empresa / Nome
+        <input id="ac-name" type="text" placeholder="Ex: Academia do Fulano" />
+      </label>
+      <label class="block-label">Telefone (com DDD)
+        <input id="ac-phone" type="text" placeholder="Ex: (51) 99999-8888" />
+      </label>
+      <label class="block-label">Lista / Nicho
+        <input id="ac-niche" type="text" placeholder="Ex: Testes" />
+      </label>
+      <div class="modal-actions">
+        <button class="btn" id="ac-cancel">Cancelar</button>
+        <button class="btn primary" id="ac-save">Salvar contato</button>
+      </div>
+    </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>

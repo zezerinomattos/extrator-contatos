@@ -191,12 +191,26 @@ class CampaignRunner {
       await this.sleep(betweenMsgSec * 1000);
     }
 
-    // 2ª mensagem: texto principal + criativo (se houver)
+    // 2ª mensagem: texto principal — é o essencial, então vai PRIMEIRO e sozinho.
     const message = fillTemplate(options.message);
+    await client.sendMessage(chatId, message);
+
+    // 3ª: criativo como mensagem SEPARADA (sem legenda). Enviar imagem/vídeo COM
+    // legenda estava travando o envio (bug conhecido da whatsapp-web.js) e, como
+    // a mensagem ia junto na legenda, ela também não chegava. Separando, o texto
+    // é garantido e a imagem/vídeo é enviada logo em seguida.
     if (media) {
-      await client.sendMessage(chatId, media, { caption: message });
-    } else {
-      await client.sendMessage(chatId, message);
+      try {
+        await this.sleep(1500); // pequena pausa entre o texto e o criativo
+        await client.sendMessage(chatId, media);
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[campanha] criativo falhou para ${contact.name} (${contact.phone}): ${reason} — mas a mensagem de texto foi enviada`,
+        );
+        // se o envio da mídia derrubou a página, reconecta para os próximos
+        if (this.isSessionDeadError(reason)) session.notifyUnhealthy();
+      }
     }
 
     const logText = greeting ? `${fillTemplate(greeting)}\n---\n${message}` : message;

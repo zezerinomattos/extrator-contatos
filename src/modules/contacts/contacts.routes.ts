@@ -4,6 +4,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { contactsRepository } from './contacts.repository';
 import { importContactsFile } from './contacts.import';
+import { normalizeBrazilPhone } from '../../shared/phone';
 
 export const contactsRouter = Router();
 
@@ -25,6 +26,39 @@ contactsRouter.get('/', (req, res) => {
 
 contactsRouter.get('/niches', (_req, res) => {
   res.json(contactsRepository.listNiches());
+});
+
+/** Adiciona um contato manualmente (um número avulso, ótimo para testes). */
+contactsRouter.post('/', (req, res) => {
+  const body = req.body as { name?: string; phone?: string; niche?: string };
+  const name = (body.name ?? '').trim();
+  const rawPhone = (body.phone ?? '').trim();
+  const niche = (body.niche ?? '').trim() || 'Manual';
+
+  if (!name) {
+    res.status(400).json({ error: 'Informe o nome/empresa do contato.' });
+    return;
+  }
+  if (!rawPhone) {
+    res.status(400).json({ error: 'Informe o telefone.' });
+    return;
+  }
+  const phone = normalizeBrazilPhone(rawPhone);
+  if (!phone) {
+    res.status(400).json({ error: 'Telefone inválido. Use DDD + número, ex: (51) 99999-8888.' });
+    return;
+  }
+
+  const inserted = contactsRepository.insert({
+    name,
+    phone,
+    phone_display: rawPhone,
+    address: null,
+    niche,
+    source: 'manual',
+  });
+
+  res.json({ inserted, duplicate: !inserted, niche });
 });
 
 contactsRouter.get('/stats', (_req, res) => {

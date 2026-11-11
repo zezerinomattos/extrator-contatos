@@ -777,6 +777,66 @@ $('#rmk-export-btn').addEventListener('click', () => {
   window.location.href = `/api/export/remarketing.xlsx?${params}`;
 });
 
+/* ========== Adicionar contato manualmente ========== */
+
+let addContactOrigin = 'contacts'; // de onde o modal foi aberto: 'contacts' | 'campaign'
+
+function openAddContact(origin) {
+  addContactOrigin = origin;
+  $('#ac-name').value = '';
+  $('#ac-phone').value = '';
+  const currentNiche = origin === 'campaign' ? $('#camp-niche').value : $('#ct-filter-niche').value;
+  $('#ac-niche').value = currentNiche || '';
+  $('#add-contact-modal').classList.remove('hidden');
+  $('#ac-name').focus();
+}
+
+function closeAddContact() {
+  $('#add-contact-modal').classList.add('hidden');
+}
+
+$('#camp-add-contact').addEventListener('click', () => openAddContact('campaign'));
+$('#ct-add-contact').addEventListener('click', () => openAddContact('contacts'));
+$('#ac-cancel').addEventListener('click', closeAddContact);
+$('#add-contact-modal').addEventListener('click', (ev) => {
+  if (ev.target === $('#add-contact-modal')) closeAddContact(); // clicar fora fecha
+});
+
+$('#ac-save').addEventListener('click', async () => {
+  const name = $('#ac-name').value.trim();
+  const phone = $('#ac-phone').value.trim();
+  const niche = $('#ac-niche').value.trim();
+  if (!name) return toast('Informe o nome/empresa.', true);
+  if (!phone) return toast('Informe o telefone.', true);
+
+  const btn = $('#ac-save');
+  btn.disabled = true;
+  try {
+    const r = await api.post('/api/contacts', { name, phone, niche });
+    if (r.duplicate) {
+      toast('Esse telefone já estava na base.', true);
+    } else {
+      toast('Contato adicionado!');
+    }
+    closeAddContact();
+    loadStats();
+    // mostra o contato recém-adicionado na lista de onde veio
+    await loadNicheSelects();
+    if (addContactOrigin === 'campaign') {
+      $('#camp-niche').value = r.niche;
+      loadCampaignContacts();
+    } else {
+      $('#ct-filter-niche').value = r.niche;
+      $('#ct-filter-status').value = '';
+      loadContacts();
+    }
+  } catch (err) {
+    toast(err.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 /* ========== Inicialização ========== */
 
 loadStats();
